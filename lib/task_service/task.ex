@@ -1,4 +1,5 @@
 defmodule TaskService.Task do
+  import Ecto.Changeset
   alias TaskService.Task
 
   defstruct [
@@ -7,11 +8,17 @@ defmodule TaskService.Task do
     :requires
   ]
 
+  @types %{
+    name: :string,
+    command: :string,
+    requires: {:array, :string}
+  }
+
   def new(attrs) do
-    %Task{
-      name: attrs["name"],
-      command: attrs["command"],
-      requires: Map.get(attrs, "requires", [])
-    }
+    {%Task{}, @types}
+    |> change(%{requires: []})
+    |> cast(attrs, Map.keys(@types))
+    |> validate_required([:name, :command])
+    |> apply_action!(:create)
   end
 end

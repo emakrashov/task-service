@@ -37,7 +37,8 @@ defmodule TaskService.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:combination, "~> 0.0.3"}
+      {:combination, "~> 0.0.3"},
+      {:ecto, "~> 3.9"}
     ]
   end
 

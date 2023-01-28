@@ -154,7 +154,7 @@ defmodule TaskServiceWeb.TaskControllerTest do
       end)
     end
 
-    test "returns a reference error when the required command doesn't exists", %{conn: conn} do
+    test "returns a reference error when the required command doesn't exist", %{conn: conn} do
       tasks = [
         %{
           "name" => "task-1",
@@ -185,13 +185,40 @@ defmodule TaskServiceWeb.TaskControllerTest do
 
       expected_error = %{
         "errors" => %{
-          "detail": """
-          The task "task-2" requires "task-3" but it doesn't exists.
+          "detail" => """
+          The task "task-2" requires "task-3" but it doesn't exist.
           """
         }
       }
 
       assert {400, _, actual_error} = response
+      assert Jason.encode!(expected_error) == actual_error
+    end
+
+
+    test "returns a client error when the task has an invalid format", %{conn: conn} do
+      tasks = [%{}]
+
+      response = assert_error_sent 422, fn ->
+        post(conn, ~p"/api/tasks", %{
+          "tasks" => tasks
+        })
+      end
+
+      expected_error = %{
+        "errors" => [
+          %{
+            "field" => "name",
+            "message" => "can't be blank"
+          },
+          %{
+            "field" => "command",
+            "message" => "can't be blank"
+          }
+        ]
+      }
+
+      assert {422, _, actual_error} = response
       assert Jason.encode!(expected_error) == actual_error
     end
   end
