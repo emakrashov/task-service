@@ -17,7 +17,7 @@ defmodule TaskServiceWeb.TaskController do
     end
   end
 
-  defp format_as_script(ordered_tasks)  do
+  defp format_as_script(ordered_tasks) do
     script =
       ordered_tasks
       |> Enum.map_join("\n", & &1.command)

@@ -26,9 +26,12 @@ defmodule TaskService.ChainBuilder do
     updated_chain_builder =
       task.requires
       |> Enum.reduce(chain_builder, fn (task_name, acc) ->
-        task = Map.get(chain_builder.task_index, task_name)
-        updated_chain_builder = resolve(task, acc)
-        mark_as_resolved(task, updated_chain_builder)
+        if required_task = Map.get(chain_builder.task_index, task_name) do
+          updated_chain_builder = resolve(required_task, acc)
+          mark_as_resolved(required_task, updated_chain_builder)
+        else
+          raise TaskService.ChainBuilder.ReferenceError, {task, task_name}
+        end
       end)
 
     task = Map.get(chain_builder.task_index, task.name)

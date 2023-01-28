@@ -103,7 +103,6 @@ defmodule TaskServiceWeb.TaskControllerTest do
       end)
     end
 
-
     test "returns an ordered list of tasks as a bash script", %{conn: conn} do
       tasks = [
         %{
@@ -153,6 +152,47 @@ defmodule TaskServiceWeb.TaskControllerTest do
 
         assert text_response(conn, 200) == expected_response
       end)
+    end
+
+    test "returns a reference error when the required command doesn't exists", %{conn: conn} do
+      tasks = [
+        %{
+          "name" => "task-1",
+          "command" => "touch /tmp/file1"
+        },
+        %{
+          "name" => "task-2",
+          "command" => "cat /tmp/file1",
+          "requires" => [
+            "task-3"
+          ]
+        },
+        %{
+          "name" => "task-4",
+          "command" => "rm /tmp/file1",
+          "requires" => [
+            "task-2",
+            "task-3"
+          ]
+        }
+      ]
+
+      response = assert_error_sent 400, fn ->
+        post(conn, ~p"/api/tasks", %{
+          "tasks" => tasks
+        })
+      end
+
+      expected_error = %{
+        "errors" => %{
+          "detail": """
+          The task "task-2" requires "task-3" but it doesn't exists.
+          """
+        }
+      }
+
+      assert {400, _, actual_error} = response
+      assert Jason.encode!(expected_error) == actual_error
     end
   end
 end
